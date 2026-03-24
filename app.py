@@ -1,70 +1,41 @@
 import streamlit as st
 import pandas as pd
+import sqlite3
 import plotly.express as px
-
-df = pd.read_csv("data_bersih.csv")
 
 st.title("Dashboard Monitoring Storage")
 
-# =====================
-# PILIH TANGGAL
-# =====================
+conn = sqlite3.connect("database.db")
 
-tanggal = st.selectbox(
-    "Pilih Tanggal",
-    sorted(df["TANGGAL"].unique())
+df = pd.read_sql(
+    "SELECT * FROM data_storage",
+    conn
 )
 
-df_tanggal = df[df["TANGGAL"] == tanggal]
+# FILTER
 
+item = st.selectbox(
+    "ITEM",
+    df["ITEM"].unique()
+)
 
-# =====================
-# PILIH PARAMETER
-# =====================
+df_item = df[df["ITEM"] == item]
+
 
 parameter = st.selectbox(
-    "Pilih Parameter",
-    sorted(df_tanggal["PARAMETER"].unique())
+    "PARAMETER",
+    df_item["PARAMETER"].unique()
 )
 
-df_param = df_tanggal[df_tanggal["PARAMETER"] == parameter]
+df_param = df_item[df_item["PARAMETER"] == parameter]
 
 
-# =====================
-# TABEL
-# =====================
-
-st.subheader(f"Data tanggal {tanggal}")
-st.dataframe(df_param, use_container_width=True)
-
-
-# =====================
-# GRAFIK SEMUA ITEM
-# =====================
-
-fig = px.bar(
+fig = px.line(
     df_param,
-    x="ITEM",
-    y="NILAI",
-    color="ITEM",
-    title=f"{parameter} tanggal {tanggal}"
+    x="TANGGAL",
+    y="NILAI"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig)
 
-
-# =====================
-# KETERANGAN / REDAKSI
-# =====================
-
-st.markdown("### Keterangan")
-
-st.write(
-    f"""
-    Pada tanggal {tanggal}, nilai parameter **{parameter}**
-    ditampilkan untuk seluruh storage, bunker, cangkang,
-    dan jangkos yang tersedia pada sistem monitoring.
-
-    Data ini digunakan sebagai bahan evaluasi operasional harian.
-    """
-)
+st.dataframe(df_param)

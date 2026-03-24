@@ -7,56 +7,64 @@ df = pd.read_csv("data_bersih.csv")
 st.title("Dashboard Monitoring Storage")
 
 # =====================
-# FILTER ITEM
+# PILIH TANGGAL
 # =====================
 
-item = st.selectbox(
-    "Pilih ITEM",
-    sorted(df["ITEM"].unique())
+tanggal = st.selectbox(
+    "Pilih Tanggal",
+    sorted(df["TANGGAL"].unique())
 )
 
-df_item = df[df["ITEM"] == item]
+df_tanggal = df[df["TANGGAL"] == tanggal]
+
 
 # =====================
-# FILTER PARAMETER
+# PILIH PARAMETER
 # =====================
 
 parameter = st.selectbox(
-    "Pilih PARAMETER",
-    sorted(df_item["PARAMETER"].unique())
+    "Pilih Parameter",
+    sorted(df_tanggal["PARAMETER"].unique())
 )
 
-df_param = df_item[df_item["PARAMETER"] == parameter]
+df_param = df_tanggal[df_tanggal["PARAMETER"] == parameter]
 
-# =====================
-# FILTER TANGGAL
-# =====================
-
-tanggal = st.multiselect(
-    "Pilih Tanggal",
-    sorted(df_param["TANGGAL"].unique()),
-    default=sorted(df_param["TANGGAL"].unique())
-)
-
-df_final = df_param[df_param["TANGGAL"].isin(tanggal)]
 
 # =====================
 # TABEL
 # =====================
 
-st.subheader("Data")
-st.dataframe(df_final, use_container_width=True)
+st.subheader(f"Data tanggal {tanggal}")
+st.dataframe(df_param, use_container_width=True)
+
 
 # =====================
-# GRAFIK
+# GRAFIK SEMUA ITEM
 # =====================
 
-fig = px.line(
-    df_final,
-    x="TANGGAL",
+fig = px.bar(
+    df_param,
+    x="ITEM",
     y="NILAI",
-    markers=True,
-    title=f"{item} - {parameter}"
+    color="ITEM",
+    title=f"{parameter} tanggal {tanggal}"
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+
+# =====================
+# KETERANGAN / REDAKSI
+# =====================
+
+st.markdown("### Keterangan")
+
+st.write(
+    f"""
+    Pada tanggal {tanggal}, nilai parameter **{parameter}**
+    ditampilkan untuk seluruh storage, bunker, cangkang,
+    dan jangkos yang tersedia pada sistem monitoring.
+
+    Data ini digunakan sebagai bahan evaluasi operasional harian.
+    """
+)

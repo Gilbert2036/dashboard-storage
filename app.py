@@ -1,41 +1,62 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 import plotly.express as px
+
+df = pd.read_csv("data_bersih.csv")
 
 st.title("Dashboard Monitoring Storage")
 
-conn = sqlite3.connect("database.db")
-
-df = pd.read_sql(
-    "SELECT * FROM data_storage",
-    conn
-)
-
-# FILTER
+# =====================
+# FILTER ITEM
+# =====================
 
 item = st.selectbox(
-    "ITEM",
-    df["ITEM"].unique()
+    "Pilih ITEM",
+    sorted(df["ITEM"].unique())
 )
 
 df_item = df[df["ITEM"] == item]
 
+# =====================
+# FILTER PARAMETER
+# =====================
 
 parameter = st.selectbox(
-    "PARAMETER",
-    df_item["PARAMETER"].unique()
+    "Pilih PARAMETER",
+    sorted(df_item["PARAMETER"].unique())
 )
 
 df_param = df_item[df_item["PARAMETER"] == parameter]
 
+# =====================
+# FILTER TANGGAL
+# =====================
 
-fig = px.line(
-    df_param,
-    x="TANGGAL",
-    y="NILAI"
+tanggal = st.multiselect(
+    "Pilih Tanggal",
+    sorted(df_param["TANGGAL"].unique()),
+    default=sorted(df_param["TANGGAL"].unique())
 )
 
-st.plotly_chart(fig)
+df_final = df_param[df_param["TANGGAL"].isin(tanggal)]
 
-st.dataframe(df_param)
+# =====================
+# TABEL
+# =====================
+
+st.subheader("Data")
+st.dataframe(df_final, use_container_width=True)
+
+# =====================
+# GRAFIK
+# =====================
+
+fig = px.line(
+    df_final,
+    x="TANGGAL",
+    y="NILAI",
+    markers=True,
+    title=f"{item} - {parameter}"
+)
+
+st.plotly_chart(fig, use_container_width=True)
